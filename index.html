@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="format-detection" content="telephone=no">
+  <title>房租费用计算器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #4F46E5;
+      --primary-light: #818CF8;
+      --accent: #10B981;
+      --danger: #EF4444;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --border: #E2E8F0;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --radius: 16px;
+    }
+
+    body {
+      font-family: "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 20px 16px 40px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .header-icon {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Info Bar */
+    .info-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .info-input {
+      flex: 1;
+    }
+
+    .info-input label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .info-input input {
+      width: 100%;
+      height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0 14px;
+      font-size: 16px;
+      color: var(--text-primary);
+      background: var(--bg);
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+    }
+
+    .info-input input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Card */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-header .icon {
+      font-size: 24px;
+    }
+
+    .card-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Input Group */
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .input-group {
+      flex: 1;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .input-group input {
+      width: 100%;
+      height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0 14px;
+      font-size: 18px;
+      font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+      color: var(--text-primary);
+      background: var(--bg);
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .input-group input::placeholder {
+      color: #CBD5E1;
+    }
+
+    /* Subtotal */
+    .subtotal {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%);
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+
+    .subtotal-label {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .subtotal-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    }
+
+    /* Single Input */
+    .single-input {
+      margin-bottom: 12px;
+    }
+
+    .single-input input {
+      width: 100%;
+      height: 52px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 20px;
+      font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+      color: var(--text-primary);
+      background: var(--bg);
+      transition: all 0.2s ease;
+      -webkit-appearance: none;
+    }
+
+    .single-input input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* Calculate Button */
+    .btn-calculate {
+      width: 100%;
+      height: 56px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, #6366F1 100%);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+      margin-bottom: 16px;
+    }
+
+    .btn-calculate:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Result Card */
+    .result-card {
+      background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      display: none;
+    }
+
+    .result-card.show {
+      opacity: 1;
+      transform: translateY(0);
+      display: block;
+    }
+
+    /* Bill Title */
+    .bill-title {
+      text-align: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .bill-title .month {
+      font-size: 20px;
+      font-weight: 700;
+      color: #F1F5F9;
+      margin-bottom: 4px;
+    }
+
+    .bill-title .floor {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .result-header .icon {
+      font-size: 24px;
+    }
+
+    .result-header h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .result-row .label {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .result-row .label .detail {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-left: 4px;
+    }
+
+    .result-row .value {
+      font-size: 17px;
+      font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+      font-weight: 500;
+    }
+
+    .result-divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 8px 0;
+    }
+
+    .result-total {
+      margin-top: 12px;
+      padding-top: 16px;
+      border-top: 2px dashed rgba(255, 255, 255, 0.3);
+    }
+
+    .result-total .label {
+      font-size: 16px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .result-total .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #34D399;
+      font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    }
+
+    /* Reset Button */
+    .btn-reset {
+      width: 100%;
+      height: 48px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-reset:hover {
+      border-color: var(--danger);
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .btn-reset:active {
+      transform: scale(0.98);
+    }
+
+    /* Formula Tag */
+    .formula-tag {
+      display: inline-block;
+      font-size: 11px;
+      background: rgba(79, 70, 229, 0.1);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      font-family: "SF Mono", "Monaco", monospace;
+    }
+
+    /* Usage Tag */
+    .usage-tag {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-left: 6px;
+    }
+
+    /* Meter Readings */
+    .meter-readings {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      margin-bottom: 4px;
+    }
+
+    .meter-label {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .meter-values {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
+    }
+
+    .meter-values span {
+      color: #F1F5F9;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">🏠</div>
+      <h1>房租费用计算器</h1>
+      <p>清晰算账，轻松分摊</p>
+    </div>
+
+    <!-- Info Bar -->
+    <div class="info-bar">
+      <div class="info-input">
+        <label>月份</label>
+        <input type="month" id="monthInput" value="">
+      </div>
+      <div class="info-input">
+        <label>楼层</label>
+        <input type="text" id="floorInput" placeholder="如：3楼/地下室">
+      </div>
+    </div>
+
+    <!-- Electricity Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">⚡</span>
+        <h2>电费</h2>
+        <span class="formula-tag">×1.3元/度</span>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>上月电表读数</label>
+          <input type="number" id="elePrev" placeholder="0" step="0.01" min="0">
+        </div>
+        <div class="input-group">
+          <label>本月电表读数</label>
+          <input type="number" id="eleCurr" placeholder="0" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="subtotal">
+        <span class="subtotal-label">电费小计</span>
+        <span class="subtotal-value" id="eleSubtotal">¥0.00</span>
+      </div>
+    </div>
+
+    <!-- Water Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">💧</span>
+        <h2>水费</h2>
+        <span class="formula-tag">×4元/吨</span>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label>上月水表读数</label>
+          <input type="number" id="waterPrev" placeholder="0" step="0.01" min="0">
+        </div>
+        <div class="input-group">
+          <label>本月水表读数</label>
+          <input type="number" id="waterCurr" placeholder="0" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="subtotal">
+        <span class="subtotal-label">水费小计</span>
+        <span class="subtotal-value" id="waterSubtotal">¥0.00</span>
+      </div>
+    </div>
+
+    <!-- E-Bike Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">🛵</span>
+        <h2>电动车充电费</h2>
+        <span class="formula-tag">×20元/辆</span>
+      </div>
+      <div class="single-input">
+        <input type="number" id="ebikeCount" placeholder="电动车数量" step="1" min="0">
+      </div>
+      <div class="subtotal">
+        <span class="subtotal-label">充电费小计</span>
+        <span class="subtotal-value" id="ebikeSubtotal">¥0.00</span>
+      </div>
+    </div>
+
+    <!-- Rent Card -->
+    <div class="card">
+      <div class="card-header">
+        <span class="icon">🏷️</span>
+        <h2>房租</h2>
+      </div>
+      <div class="single-input">
+        <input type="number" id="rentAmount" placeholder="输入房租金额" step="0.01" min="0">
+      </div>
+    </div>
+
+    <!-- Calculate Button -->
+    <button class="btn-calculate" id="calcBtn">计算总费用</button>
+
+    <!-- Result Card -->
+    <div class="result-card" id="resultCard">
+      <div class="bill-title">
+        <div class="month" id="resultMonth">2026年4月</div>
+        <div class="floor" id="resultFloor">楼层：-</div>
+      </div>
+      <div class="result-header">
+        <span class="icon">📋</span>
+        <h2>费用总览</h2>
+      </div>
+      
+      <!-- Electric Meter Reading -->
+      <div class="meter-readings">
+        <span class="meter-label">⚡ 电表读数</span>
+        <span class="meter-values">
+          上月: <span id="resultElePrev">0</span> → 本月: <span id="resultEleCurr">0</span>
+        </span>
+      </div>
+      <div class="result-row">
+        <span class="label">⚡ 电费<span class="detail" id="resultEleUsage"></span></span>
+        <span class="value" id="resultEle">¥0.00</span>
+      </div>
+      
+      <!-- Water Meter Reading -->
+      <div class="meter-readings">
+        <span class="meter-label">💧 水表读数</span>
+        <span class="meter-values">
+          上月: <span id="resultWaterPrev">0</span> → 本月: <span id="resultWaterCurr">0</span>
+        </span>
+      </div>
+      <div class="result-row">
+        <span class="label">💧 水费<span class="detail" id="resultWaterUsage"></span></span>
+        <span class="value" id="resultWater">¥0.00</span>
+      </div>
+      
+      <div class="result-row">
+        <span class="label">🛵 充电费<span class="detail" id="resultEbikeUsage"></span></span>
+        <span class="value" id="resultEbike">¥0.00</span>
+      </div>
+      <div class="result-row">
+        <span class="label">🏷️ 房租</span>
+        <span class="value" id="resultRent">¥0.00</span>
+      </div>
+      <div class="result-divider"></div>
+      <div class="result-row result-total">
+        <span class="label">💰 合计</span>
+        <span class="value" id="resultTotal">¥0.00</span>
+      </div>
+    </div>
+
+    <!-- Reset Button -->
+    <button class="btn-reset" id="resetBtn">重置所有</button>
+  </div>
+
+  <script>
+    // DOM Elements
+    const monthInput = document.getElementById('monthInput');
+    const floorInput = document.getElementById('floorInput');
+    const elePrev = document.getElementById('elePrev');
+    const eleCurr = document.getElementById('eleCurr');
+    const waterPrev = document.getElementById('waterPrev');
+    const waterCurr = document.getElementById('waterCurr');
+    const ebikeCount = document.getElementById('ebikeCount');
+    const rentAmount = document.getElementById('rentAmount');
+    const calcBtn = document.getElementById('calcBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultCard = document.getElementById('resultCard');
+
+    // Subtotals
+    const eleSubtotal = document.getElementById('eleSubtotal');
+    const waterSubtotal = document.getElementById('waterSubtotal');
+    const ebikeSubtotal = document.getElementById('ebikeSubtotal');
+
+    // Result elements
+    const resultMonth = document.getElementById('resultMonth');
+    const resultFloor = document.getElementById('resultFloor');
+    const resultEle = document.getElementById('resultEle');
+    const resultWater = document.getElementById('resultWater');
+    const resultEbike = document.getElementById('resultEbike');
+    const resultRent = document.getElementById('resultRent');
+    const resultTotal = document.getElementById('resultTotal');
+    const resultEleUsage = document.getElementById('resultEleUsage');
+    const resultWaterUsage = document.getElementById('resultWaterUsage');
+    const resultEbikeUsage = document.getElementById('resultEbikeUsage');
+    const resultElePrev = document.getElementById('resultElePrev');
+    const resultEleCurr = document.getElementById('resultEleCurr');
+    const resultWaterPrev = document.getElementById('resultWaterPrev');
+    const resultWaterCurr = document.getElementById('resultWaterCurr');
+
+    // Pricing constants
+    const ELEC_RATE = 1.3;  // 元/度
+    const WATER_RATE = 4;  // 元/吨
+    const EBIKE_RATE = 20; // 元/辆
+
+    // Set default month to current
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    monthInput.value = currentMonth;
+
+    // Helper function to format currency
+    function formatCurrency(amount) {
+      return '¥' + amount.toFixed(2);
+    }
+
+    // Helper function to get input value
+    function getValue(input) {
+      const val = parseFloat(input.value);
+      return isNaN(val) ? 0 : val;
+    }
+
+    // Format month for display
+    function formatMonth(monthStr) {
+      if (!monthStr) return '未选择月份';
+      const [year, month] = monthStr.split('-');
+      return `${year}年${parseInt(month)}月`;
+    }
+
+    // Calculate subtotals in real-time
+    function updateSubtotals() {
+      // Electricity
+      const eleUsage = Math.max(0, getValue(eleCurr) - getValue(elePrev));
+      const eleCost = eleUsage * ELEC_RATE;
+      eleSubtotal.textContent = formatCurrency(eleCost);
+
+      // Water
+      const waterUsage = Math.max(0, getValue(waterCurr) - getValue(waterPrev));
+      const waterCost = waterUsage * WATER_RATE;
+      waterSubtotal.textContent = formatCurrency(waterCost);
+
+      // E-bike
+      const ebikeCost = Math.max(0, Math.floor(getValue(ebikeCount))) * EBIKE_RATE;
+      ebikeSubtotal.textContent = formatCurrency(ebikeCost);
+    }
+
+    // Calculate and show results
+    function calculate() {
+      // Get basic info
+      const month = monthInput.value;
+      const floor = floorInput.value || '-';
+      
+      // Get meter readings
+      const elePrevVal = getValue(elePrev);
+      const eleCurrVal = getValue(eleCurr);
+      const waterPrevVal = getValue(waterPrev);
+      const waterCurrVal = getValue(waterCurr);
+      
+      // Calculate usage and costs
+      const eleUsage = Math.max(0, eleCurrVal - elePrevVal);
+      const waterUsage = Math.max(0, waterCurrVal - waterPrevVal);
+      const ebikeNum = Math.max(0, Math.floor(getValue(ebikeCount)));
+      
+      const eleCost = eleUsage * ELEC_RATE;
+      const waterCost = waterUsage * WATER_RATE;
+      const ebikeCost = ebikeNum * EBIKE_RATE;
+      const rent = getValue(rentAmount);
+      const total = eleCost + waterCost + ebikeCost + rent;
+
+      // Update bill title
+      resultMonth.textContent = formatMonth(month);
+      resultFloor.textContent = '楼层：' + floor;
+
+      // Update meter readings
+      resultElePrev.textContent = elePrevVal.toFixed(2);
+      resultEleCurr.textContent = eleCurrVal.toFixed(2);
+      resultWaterPrev.textContent = waterPrevVal.toFixed(2);
+      resultWaterCurr.textContent = waterCurrVal.toFixed(2);
+
+      // Update result card with usage details
+      resultEleUsage.textContent = `(${eleUsage.toFixed(2)}度)`;
+      resultWaterUsage.textContent = `(${waterUsage.toFixed(2)}吨)`;
+      resultEbikeUsage.textContent = `(${ebikeNum}辆)`;
+      
+      resultEle.textContent = formatCurrency(eleCost);
+      resultWater.textContent = formatCurrency(waterCost);
+      resultEbike.textContent = formatCurrency(ebikeCost);
+      resultRent.textContent = formatCurrency(rent);
+      resultTotal.textContent = formatCurrency(total);
+
+      // Show result card with animation
+      resultCard.classList.add('show');
+
+      // Scroll to result
+      setTimeout(() => {
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+
+    // Reset all inputs
+    function resetAll() {
+      monthInput.value = currentMonth;
+      floorInput.value = '';
+      elePrev.value = '';
+      eleCurr.value = '';
+      waterPrev.value = '';
+      waterCurr.value = '';
+      ebikeCount.value = '';
+      rentAmount.value = '';
+
+      updateSubtotals();
+      resultCard.classList.remove('show');
+    }
+
+    // Event listeners
+    [elePrev, eleCurr].forEach(el => {
+      el.addEventListener('input', updateSubtotals);
+      el.addEventListener('blur', updateSubtotals);
+    });
+
+    [waterPrev, waterCurr].forEach(el => {
+      el.addEventListener('input', updateSubtotals);
+      el.addEventListener('blur', updateSubtotals);
+    });
+
+    ebikeCount.addEventListener('input', updateSubtotals);
+    ebikeCount.addEventListener('blur', updateSubtotals);
+
+    calcBtn.addEventListener('click', calculate);
+    resetBtn.addEventListener('click', resetAll);
+
+    // Initialize
+    updateSubtotals();
+  </script>
+</body>
+</html>
